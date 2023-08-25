@@ -2,6 +2,7 @@
 
 namespace omnilight\scheduling;
 
+use Carbon\Carbon;
 use Cron\CronExpression;
 use GuzzleHttp\Client as HttpClient;
 use Symfony\Component\Process\Process;
@@ -31,7 +32,7 @@ class Event extends Component
      *
      * @var string
      */
-    protected $_expression = '* * * * * *';
+    protected $_expression = '* * * * *';
     /**
      * The timezone the date should be evaluated on.
      *
@@ -199,11 +200,11 @@ class Event extends Component
      */
     protected function expressionPasses()
     {
-        $date = new \DateTime('now');
+        $date = Carbon::now();
         if ($this->_timezone) {
             $date->setTimezone($this->_timezone);
         }
-        return CronExpression::factory($this->_expression)->isDue($date);
+        return CronExpression::factory($this->_expression)->isDue($date->toDateTimeString());
     }
 
     /**
@@ -229,7 +230,17 @@ class Event extends Component
      */
     public function hourly()
     {
-        return $this->cron('0 * * * * *');
+        return $this->spliceIntoPosition(1, 0);
+    }
+
+    /**
+     * Schedule the event to run hourly at a given offset in the hour.
+     * @param $offset
+     * @return $this
+     */
+    public function hourlyAt($offset)
+    {
+        return $this->spliceIntoPosition(1, $offset);
     }
 
     /**
@@ -251,7 +262,8 @@ class Event extends Component
      */
     public function daily()
     {
-        return $this->cron('0 0 * * * *');
+        return $this->spliceIntoPosition(1, 0)
+            ->spliceIntoPosition(2, 0);
     }
 
     /**
@@ -294,12 +306,16 @@ class Event extends Component
 
     /**
      * Schedule the event to run twice daily.
-     *
+     * @param int $first
+     * @param int $second
      * @return $this
      */
-    public function twiceDaily()
+    public function twiceDaily($first=1,$second=13)
     {
-        return $this->cron('0 1,13 * * * *');
+        $hours = $first . ',' . $second;
+
+        return $this->spliceIntoPosition(1, 0)
+            ->spliceIntoPosition(2, $hours);
     }
 
     /**
@@ -310,6 +326,15 @@ class Event extends Component
     public function weekdays()
     {
         return $this->spliceIntoPosition(5, '1-5');
+    }
+
+    /**
+     * Schedule the event to run only on weekends.
+     * @return $this
+     */
+    public function weekends()
+    {
+        return $this->spliceIntoPosition(5, '0,6');
     }
 
     /**
@@ -394,6 +419,7 @@ class Event extends Component
         return $this->days(0);
     }
 
+
     /**
      * Schedule the event to run weekly.
      *
@@ -401,7 +427,9 @@ class Event extends Component
      */
     public function weekly()
     {
-        return $this->cron('0 0 * * 0 *');
+        return $this->spliceIntoPosition(1, 0)
+            ->spliceIntoPosition(2, 0)
+            ->spliceIntoPosition(5, 0);
     }
 
     /**
@@ -424,8 +452,81 @@ class Event extends Component
      */
     public function monthly()
     {
-        return $this->cron('0 0 1 * * *');
+        return $this->spliceIntoPosition(1, 0)
+            ->spliceIntoPosition(2, 0)
+            ->spliceIntoPosition(3, 1);
     }
+
+    /**
+     * Schedule the event to run monthly on a given day and time.
+     *
+     * @param int $day
+     * @param string $time
+     * @return $this
+     */
+    public function monthlyOn($day = 1, $time = '0:0')
+    {
+        $this->dailyAt($time);
+
+        return $this->spliceIntoPosition(3, $day);
+    }
+
+    /**
+     * Schedule the event to run twice monthly.
+     *
+     * @param int $first
+     * @param int $second
+     * @return $this
+     */
+    public function twiceMonthly($first = 1, $second = 16)
+    {
+        $days = $first . ',' . $second;
+
+        return $this->spliceIntoPosition(1, 0)
+            ->spliceIntoPosition(2, 0)
+            ->spliceIntoPosition(3, $days);
+    }
+
+    /**
+     * Schedule the event to run on the last day of the month.
+     * @param string $time
+     * @return $this
+     */
+    public function lastDayOfMonth($time = '0:0')
+    {
+        $this->dailyAt($time);
+
+        return $this->spliceIntoPosition(3, Carbon::now()->endOfMonth()->day);
+    }
+
+    /**
+     * Schedule the event to run quarterly.
+     *
+     * @return $this
+     */
+    public function quarterly()
+    {
+        return $this->spliceIntoPosition(1, 0)
+            ->spliceIntoPosition(2, 0)
+            ->spliceIntoPosition(3, 1)
+            ->spliceIntoPosition(4, '1-12/3');
+    }
+
+    /**
+     * Schedule the event to run quarterly on a given day and time.
+     *
+     * @param  int  $dayOfQuarter
+     * @param  int  $time
+     * @return $this
+     */
+    public function quarterlyOn($dayOfQuarter = 1, $time = '0:0')
+    {
+        $this->dailyAt($time);
+
+        return $this->spliceIntoPosition(3, $dayOfQuarter)
+            ->spliceIntoPosition(4, '1-12/3');
+    }
+
 
     /**
      * Schedule the event to run yearly.
@@ -434,8 +535,28 @@ class Event extends Component
      */
     public function yearly()
     {
-        return $this->cron('0 0 1 1 * *');
+        return $this->spliceIntoPosition(1, 0)
+            ->spliceIntoPosition(2, 0)
+            ->spliceIntoPosition(3, 1)
+            ->spliceIntoPosition(4, 1);
     }
+
+    /**
+     * Schedule the event to run yearly on a given month, day, and time.
+     *
+     * @param  int  $month
+     * @param  int|string  $dayOfMonth
+     * @param  string  $time
+     * @return $this
+     */
+    public function yearlyOn($month = 1, $dayOfMonth = 1, $time = '0:0')
+    {
+        $this->dailyAt($time);
+
+        return $this->spliceIntoPosition(3, $dayOfMonth)
+            ->spliceIntoPosition(4, $month);
+    }
+
 
     /**
      * Schedule the event to run every minute.
@@ -444,7 +565,76 @@ class Event extends Component
      */
     public function everyMinute()
     {
-        return $this->cron('* * * * * *');
+        return $this->spliceIntoPosition(1, '*');
+    }
+    /**
+     * Schedule the event to run every two minutes.
+     *
+     * @return $this
+     */
+    public function everyTwoMinutes()
+    {
+        return $this->spliceIntoPosition(1, '*/2');
+    }
+
+    /**
+     * Schedule the event to run every three minutes.
+     *
+     * @return $this
+     */
+    public function everyThreeMinutes()
+    {
+        return $this->spliceIntoPosition(1, '*/3');
+    }
+
+    /**
+     * Schedule the event to run every four minutes.
+     *
+     * @return $this
+     */
+    public function everyFourMinutes()
+    {
+        return $this->spliceIntoPosition(1, '*/4');
+    }
+
+    /**
+     * Schedule the event to run every five minutes.
+     *
+     * @return $this
+     */
+    public function everyFiveMinutes()
+    {
+        return $this->spliceIntoPosition(1, '*/5');
+    }
+
+    /**
+     * Schedule the event to run every ten minutes.
+     *
+     * @return $this
+     */
+    public function everyTenMinutes()
+    {
+        return $this->spliceIntoPosition(1, '*/10');
+    }
+
+    /**
+     * Schedule the event to run every fifteen minutes.
+     *
+     * @return $this
+     */
+    public function everyFifteenMinutes()
+    {
+        return $this->spliceIntoPosition(1, '*/15');
+    }
+
+    /**
+     * Schedule the event to run every thirty minutes.
+     *
+     * @return $this
+     */
+    public function everyThirtyMinutes()
+    {
+        return $this->spliceIntoPosition(1, '0,30');
     }
 
     /**
@@ -455,37 +645,7 @@ class Event extends Component
      */
     public function everyNMinutes($minutes)
     {
-        return $this->cron('*/'.$minutes.' * * * * *');
-    }
-
-    /**
-     * Schedule the event to run every five minutes.
-     *
-     * @return $this
-     */
-    public function everyFiveMinutes()
-    {
-        return $this->everyNMinutes(5);
-    }
-
-    /**
-     * Schedule the event to run every ten minutes.
-     *
-     * @return $this
-     */
-    public function everyTenMinutes()
-    {
-        return $this->everyNMinutes(10);
-    }
-
-    /**
-     * Schedule the event to run every thirty minutes.
-     *
-     * @return $this
-     */
-    public function everyThirtyMinutes()
-    {
-        return $this->cron('0,30 * * * * *');
+        return $this->spliceIntoPosition(1, "*/$minutes");
     }
 
     /**

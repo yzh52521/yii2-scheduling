@@ -11,13 +11,13 @@ The preferred way to install this extension is through [composer](http://getcomp
 Either run
 
 ```
-php composer.phar require omnilight/yii2-scheduling "*"
+ composer require yzh52521/yii2-scheduling "*"
 ```
 
 or add
 
-```json
-"omnilight/yii2-scheduling": "*"
+```
+"yzh52521/yii2-scheduling": "*"
 ```
 
 to the `require` section of your composer.json.
@@ -216,12 +216,12 @@ That's all! Now all your cronjobs will be runned as configured in your schedule.
 How to use this extension in your own extension?
 ------------------------------------------------
 
-First of all, you should include dependency to the `omnilight\yii2-scheduling` into your composer.json:
+First of all, you should include dependency to the `yzh52521\yii2-scheduling` into your composer.json:
 
 ```
 ...
 'require': {
-    "omnilight/yii2-schedule": "*"
+    "yzh52521/yii2-schedule": "*"
 }
 ...
 ```
@@ -261,7 +261,7 @@ Using addition functions
 
 If you want to use `thenPing` method of the Event, you should add the following string to the `composer.json` of your app:
 ```
-"guzzlehttp/guzzle": "~5.0"
+"guzzlehttp/guzzle": "~6.0"
 ```
 
 Note about timezones
