@@ -793,21 +793,6 @@ class Event extends Component
     }
 
     /**
-     * Register a callback to be called if the operation succeeds.
-     *
-     * @param \Closure $callback
-     * @return $this
-     */
-    public function onSuccess(\Closure $callback)
-    {
-        return $this->then(function (Application $app) use ($callback) {
-            if ($this->exitCode === 0) {
-                call_user_func($callback, $app);
-            }
-        });
-    }
-
-    /**
      * E-mail the output of the event to the recipients.
      *
      * @param MailerInterface $mailer
