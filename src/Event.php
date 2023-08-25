@@ -105,7 +105,7 @@ class Event extends Component
     public function __construct(Mutex $mutex, $command, $config = [])
     {
         $this->command = $command;
-        $this->_mutex = $mutex;
+        $this->_mutex  = $mutex;
         $this->_output = $this->getDefaultOutput();
         parent::__construct($config);
     }
@@ -244,7 +244,7 @@ class Event extends Component
     /**
      * The Cron expression representing the event's frequency.
      *
-     * @param  string $expression
+     * @param string $expression
      * @return $this
      */
     public function cron($expression)
@@ -267,7 +267,7 @@ class Event extends Component
     /**
      * Schedule the command at a given time.
      *
-     * @param  string $time
+     * @param string $time
      * @return $this
      */
     public function at($time)
@@ -278,7 +278,7 @@ class Event extends Component
     /**
      * Schedule the event to run daily at a given time (10:00, 19:30, etc).
      *
-     * @param  string $time
+     * @param string $time
      * @return $this
      */
     public function dailyAt($time)
@@ -291,13 +291,13 @@ class Event extends Component
     /**
      * Splice the given value into the given position of the expression.
      *
-     * @param  int $position
-     * @param  string $value
+     * @param int $position
+     * @param string $value
      * @return Event
      */
     protected function spliceIntoPosition($position, $value)
     {
-        $segments = explode(' ', $this->_expression);
+        $segments                = explode(' ', $this->_expression);
         $segments[$position - 1] = $value;
         return $this->cron(implode(' ', $segments));
     }
@@ -308,7 +308,7 @@ class Event extends Component
      * @param int $second
      * @return $this
      */
-    public function twiceDaily($first=1,$second=13)
+    public function twiceDaily($first = 1, $second = 13)
     {
         $hours = $first . ',' . $second;
 
@@ -348,7 +348,7 @@ class Event extends Component
     /**
      * Set the days of the week the command should run on.
      *
-     * @param  array|int $days
+     * @param array|int $days
      * @return $this
      */
     public function days($days)
@@ -433,8 +433,8 @@ class Event extends Component
     /**
      * Schedule the event to run weekly on a given day and time.
      *
-     * @param  int $day
-     * @param  string $time
+     * @param int $day
+     * @param string $time
      * @return $this
      */
     public function weeklyOn($day, $time = '0:0')
@@ -513,8 +513,8 @@ class Event extends Component
     /**
      * Schedule the event to run quarterly on a given day and time.
      *
-     * @param  int  $dayOfQuarter
-     * @param  int  $time
+     * @param int $dayOfQuarter
+     * @param int $time
      * @return $this
      */
     public function quarterlyOn($dayOfQuarter = 1, $time = '0:0')
@@ -542,9 +542,9 @@ class Event extends Component
     /**
      * Schedule the event to run yearly on a given month, day, and time.
      *
-     * @param  int  $month
-     * @param  int|string  $dayOfMonth
-     * @param  string  $time
+     * @param int $month
+     * @param int|string $dayOfMonth
+     * @param string $time
      * @return $this
      */
     public function yearlyOn($month = 1, $dayOfMonth = 1, $time = '0:0')
@@ -565,6 +565,7 @@ class Event extends Component
     {
         return $this->spliceIntoPosition(1, '*');
     }
+
     /**
      * Schedule the event to run every two minutes.
      *
@@ -649,7 +650,7 @@ class Event extends Component
     /**
      * Set the timezone the date should be evaluated on.
      *
-     * @param  \DateTimeZone|string $timezone
+     * @param \DateTimeZone|string $timezone
      * @return $this
      */
     public function timezone($timezone)
@@ -661,7 +662,7 @@ class Event extends Component
     /**
      * Set which user the command should run as.
      *
-     * @param  string $user
+     * @param string $user
      * @return $this
      */
     public function user($user)
@@ -673,7 +674,7 @@ class Event extends Component
     /**
      * Set if errors should be displayed
      *
-     * @param  bool $omitErrors
+     * @param bool $omitErrors
      * @return $this
      */
     public function omitErrors($omitErrors = false)
@@ -689,9 +690,9 @@ class Event extends Component
      */
     public function withoutOverlapping()
     {
-        return $this->then(function() {
+        return $this->then(function () {
             $this->_mutex->release($this->mutexName());
-        })->skip(function() {
+        })->skip(function () {
             return !$this->_mutex->acquire($this->mutexName());
         });
     }
@@ -713,7 +714,7 @@ class Event extends Component
     /**
      * Register a callback to further filter the schedule.
      *
-     * @param  \Closure $callback
+     * @param \Closure $callback
      * @return $this
      */
     public function when(\Closure $callback)
@@ -725,7 +726,7 @@ class Event extends Component
     /**
      * Register a callback to further filter the schedule.
      *
-     * @param  \Closure $callback
+     * @param \Closure $callback
      * @return $this
      */
     public function skip(\Closure $callback)
@@ -737,33 +738,33 @@ class Event extends Component
     /**
      * Send the output of the command to a given location.
      *
-     * @param  string $location
+     * @param string $location
      * @return $this
      */
     public function sendOutputTo($location)
     {
         $this->_redirect = ' > ';
-        $this->_output = $location;
+        $this->_output   = $location;
         return $this;
     }
 
     /**
      * Append the output of the command to a given location.
      *
-     * @param  string $location
+     * @param string $location
      * @return $this
      */
     public function appendOutputTo($location)
     {
         $this->_redirect = ' >> ';
-        $this->_output = $location;
+        $this->_output   = $location;
         return $this;
     }
 
     /**
      * E-mail the results of the scheduled operation.
      *
-     * @param  array $addresses
+     * @param array $addresses
      * @return $this
      *
      * @throws \LogicException
@@ -782,7 +783,7 @@ class Event extends Component
     /**
      * Register a callback to be called after the operation.
      *
-     * @param  \Closure $callback
+     * @param \Closure $callback
      * @return $this
      */
     public function then(\Closure $callback)
@@ -792,16 +793,31 @@ class Event extends Component
     }
 
     /**
+     * Register a callback to be called if the operation succeeds.
+     *
+     * @param \Closure $callback
+     * @return $this
+     */
+    public function onSuccess(\Closure $callback)
+    {
+        return $this->then(function (Application $app) use ($callback) {
+            if ($this->exitCode === 0) {
+                call_user_func($callback, $app);
+            }
+        });
+    }
+
+    /**
      * E-mail the output of the event to the recipients.
      *
      * @param MailerInterface $mailer
-     * @param  array $addresses
+     * @param array $addresses
      */
     protected function emailOutput(MailerInterface $mailer, $addresses)
     {
         $textBody = file_get_contents($this->_output);
 
-        if (trim($textBody) != '' ) {
+        if (trim($textBody) != '') {
             $mailer->compose()
                 ->setTextBody($textBody)
                 ->setSubject($this->getEmailSubject())
@@ -826,7 +842,7 @@ class Event extends Component
     /**
      * Register a callback to the ping a given URL after the job runs.
      *
-     * @param  string $url
+     * @param string $url
      * @return $this
      */
     public function thenPing($url)
@@ -839,7 +855,7 @@ class Event extends Component
     /**
      * Set the human-friendly description of the event.
      *
-     * @param  string $description
+     * @param string $description
      * @return $this
      */
     public function description($description)
